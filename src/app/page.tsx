@@ -1,103 +1,179 @@
-import Image from "next/image";
+'use client'
+import * as React from 'react';
+import Button from '@/components/Button';
+import List from '@/components/List';
+import { supabase } from '@/lib/supabaseClient';
+import { useRouter } from 'next/navigation';
 
-export default function Home() {
+interface Player {
+  name: string;
+  point: number;
+  handicap: number;
+  rank: number;
+  gameCount: number;
+  progress: number;
+  winCount: number;
+  lossCount: number;
+  bonus: number;
+}
+
+interface LeagueSummary {
+  playerCount: number;
+  gameCount: number;
+  totalPossibleGames: number;
+  progress: number;
+}
+
+async function fetchLeague(): Promise<{ players: Player[]; summary: LeagueSummary }> {
+  // 1. Fetch all players and their handicaps
+  const { data: playerHandicaps, error: playerError } = await supabase
+    .from('player_handicap')
+    .select('player_name, handicap');
+
+  if (playerError || !playerHandicaps) return { players: [], summary: { playerCount: 0, gameCount: 0, totalPossibleGames: 0, progress: 0 } };
+
+  // 2. Fetch all games
+  const { data: games, error: gameError } = await supabase.from('game').select('*');
+  if (gameError || !games) return { players: [], summary: { playerCount: 0, gameCount: 0, totalPossibleGames: 0, progress: 0 } };
+
+  // 3. Process data
+  const points: Record<string, number> = {};
+  const gameCounts: Record<string, number> = {};
+  const winCounts: Record<string, number> = {};
+  const lossCounts: Record<string, number> = {};
+  const bonuses: Record<string, number> = {};
+
+  games.forEach((g: {
+    winner_name: string;
+    loser_name: string;
+    score: string;
+    bonus: number;
+  }) => {
+    points[g.winner_name] = (points[g.winner_name] || 0) + 3;
+    points[g.loser_name] = (points[g.loser_name] || 0) + 1;
+    gameCounts[g.winner_name] = (gameCounts[g.winner_name] || 0) + 1;
+    gameCounts[g.loser_name] = (gameCounts[g.loser_name] || 0) + 1;
+    winCounts[g.winner_name] = (winCounts[g.winner_name] || 0) + 1;
+    lossCounts[g.loser_name] = (lossCounts[g.loser_name] || 0) + 1;
+    bonuses[g.winner_name] = (bonuses[g.winner_name] || 0) + (g.bonus || 0);
+  });
+
+  const players: Player[] = playerHandicaps.map((p: { player_name: string; handicap: number }) => ({
+    name: p.player_name,
+    handicap: p.handicap,
+    point: points[p.player_name] || 0,
+    rank: 0,
+    gameCount: gameCounts[p.player_name] || 0,
+    progress: 0,
+    winCount: winCounts[p.player_name] || 0,
+    lossCount: lossCounts[p.player_name] || 0,
+    bonus: bonuses[p.player_name] || 0,
+  }));
+
+  const playerCount = players.length;
+  const totalPossibleGames = playerCount > 1 ? (playerCount * (playerCount - 1)) / 2 : 0;
+  const progress = totalPossibleGames > 0 ? Math.min(100, Math.round((games.length / totalPossibleGames) * 100)) : 0;
+
+  // 선수 리스트 생성 및 정렬
+  const sortedPlayers = players.sort((a, b) => b.point - a.point);
+  
+  // 동점자 처리된 순위 부여
+  let rank = 1;
+  for (let i = 0; i < sortedPlayers.length; i++) {
+    if (i > 0 && sortedPlayers[i].point < sortedPlayers[i - 1].point) {
+      rank = i + 1;
+    }
+    sortedPlayers[i].rank = rank;
+  }
+  return { 
+    players: sortedPlayers, 
+    summary: { playerCount, gameCount: games.length, totalPossibleGames, progress } 
+  };
+}
+
+export default function LeaguePage() {
+  const [players, setPlayers] = React.useState<Player[]>([]);
+  const [summary, setSummary] = React.useState<LeagueSummary>({ playerCount: 0, gameCount: 0, totalPossibleGames: 0, progress: 0 });
+  const [loading, setLoading] = React.useState(true);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    fetchLeague().then((result: { players: Player[]; summary: LeagueSummary }) => {
+      setPlayers(result.players);
+      setSummary(result.summary);
+      setLoading(false);
+    });
+  }, []);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="max-w-xl mx-auto p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">
+          리그전 현황
+        </h1>
+        <div className="flex gap-2">
+          <Button onClick={() => router.push('/player/new')}>선수핸디등록</Button>
+          <Button onClick={() => router.push('/game/new')}>게임결과등록</Button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      {summary && !loading && (
+        <div className="mb-4 p-4 border rounded-lg bg-gray-50">
+          <div className="grid grid-cols-4 gap-4 text-center">
+            <div>
+              <div className="text-sm text-gray-500">참가인원</div>
+              <div className="text-lg font-bold" style={{ color: '#1f2937' }}>{summary.playerCount} 명</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">경기수</div>
+              <div className="text-lg font-bold" style={{ color: '#1f2937' }}>{summary.gameCount} 게임</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">총경기수</div>
+              <div className="text-lg font-bold" style={{ color: '#1f2937' }}>{summary.totalPossibleGames} 게임</div>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">진행율</div>
+              <div className="text-lg font-bold" style={{ color: '#1f2937' }}>{summary.progress} %</div>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="flex justify-between items-center font-bold border-b pb-2 mb-2 text-center text-sm">
+        <span className="w-1/12">순위</span>
+        <span className="w-3/12 text-left pl-2">이름</span>
+        <span className="w-1/12">핸디</span>
+        <span className="w-1/12">게임수</span>
+        <span className="w-1/12">진행율</span>
+        <span className="w-1/12">승</span>
+        <span className="w-1/12">패</span>
+        <span className="w-1/12">보너스</span>
+        <span className="w-1/12">승점</span>
+      </div>
+      <div className="border-b">
+        <List>
+          {loading ? (
+            <div>조회 중...</div>
+          ) : (
+            players.map((p) => (
+              <div key={p.name} className="flex justify-between items-center text-center py-1">
+                <span className="w-1/12">{p.rank}위</span>
+                <a href={`/player/${encodeURIComponent(p.name)}`} className="text-blue-600 underline w-3/12 text-left pl-2">{p.name}</a>
+                <span className="w-1/12">{p.handicap}</span>
+                <span className="w-1/12">{p.gameCount}</span>
+                <span className={`w-1/12 ${p.progress <= 70 ? 'text-red-500' : ''}`}>{p.progress}%</span>
+                <span className="w-1/12">{p.winCount}</span>
+                <span className="w-1/12">{p.lossCount}</span>
+                <span className="w-1/12">{p.bonus}</span>
+                <span className="w-1/12">{p.point}</span>
+              </div>
+            ))
+          )}
+        </List>
+      </div>
+      {/* <div className="mt-4 flex gap-2">
+        <Button onClick={() => router.push('/game/new')}>게임결과등록</Button>
+      </div> */}
     </div>
   );
-}
+} 

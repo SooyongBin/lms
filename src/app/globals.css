@@ -24,3 +24,7 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.alert-message {
+  @apply mt-4 p-3 rounded-md bg-blue-50 dark:bg-gray-700 text-blue-700 dark:text-blue-200 text-sm;
+}
