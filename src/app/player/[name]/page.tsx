@@ -86,10 +86,13 @@ export default function PlayerDetailPage() {
       setGames(data);
       setLoading(false);
     });
+
+    console.log("1.세션 정보 콘솔 출력...");
     // 세션 정보 콘솔 출력
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAdmin(!!session);
     });
+    console.log("2.세션 정보 콘솔 출력...");
     supabase.auth.onAuthStateChange((_event, session) => {
       setIsAdmin(!!session);
     });
