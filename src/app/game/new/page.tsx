@@ -95,22 +95,22 @@ export default function GameNewPage() {
 
     const bonus = winner.handicap + 3 <= loser.handicap ? 1 : 0;
 
-    const { data: gameInsert } = await supabase
+    const { data: gameInsert, error } = await supabase
       .from('game')
       .insert([
         {
           winner_name: winner.player_name,
-          winner_handicap: winner.handicap,
           loser_name: loser.player_name,
-          loser_handicap: loser.handicap,
           score: score,
           bonus: bonus,
         },
       ])
       .select();
 
-    if (!gameInsert || !gameInsert.length) {
-      setMsg('저장 실패: 데이터 삽입에 실패했습니다.');
+    if (error) {
+      setMsg(`저장 실패: ${error.message}`);
+    } else if (!gameInsert || !gameInsert.length) {
+      setMsg('저장 실패: 데이터 삽입에 실패했지만, 서버에서 상세 에러 메시지를 제공하지 않았습니다. (RLS 정책 확인 필요)');
     } else {
       setMsg('저장 성공!');
       router.push('/');

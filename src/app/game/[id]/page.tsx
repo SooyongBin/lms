@@ -11,8 +11,8 @@ interface Game {
   loser_name: string;
   score: string;
   bonus: number;
-  winner_handicap?: number;
-  loser_handicap?: number;
+  winner_handicap: number; // This will come from player_handicap table
+  loser_handicap: number; // This will come from player_handicap table
 }
 
 async function fetchGame(id: string) {
@@ -32,7 +32,7 @@ async function fetchGame(id: string) {
     .single();
 
   if (winnerError || loserError) {
-    console.error({ winnerError, loserError });
+    // console.error({ winnerError, loserError });
   }
 
   return {

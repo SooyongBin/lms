@@ -36,9 +36,7 @@ async function crudTest() {
     .insert([
       {
         winner_name: '홍길동',
-        winner_handicap: 10,
         loser_name: '이몽룡',
-        loser_handicap: 8,
         score: '10:8',
         bonus: 2,
       },
