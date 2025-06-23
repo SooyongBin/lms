@@ -5,6 +5,7 @@ import { ReactNode, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient';
 import ThemeManager from '@/components/ThemeManager';
 import Link from 'next/link';
+import Image from 'next/image';
 
 async function checkAdminExists(): Promise<boolean> {
   const result = await supabase
@@ -134,7 +135,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Header */}
         <header className="w-full shadow bg-white dark:bg-gray-800 sticky top-0 z-10">
           <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-3">
-            <Link href="/" className="text-xl font-bold text-blue-700 dark:text-blue-300 hover:underline">제1회 세븐당구장 리그전</Link>
+            <Link href="/" className="flex items-center gap-2">
+              <Image src="/sevenball.jpeg" alt="세븐볼" width={40} height={40} className="object-contain" />
+              <span className="text-xl font-bold text-gray-800 dark:text-white">세븐당구클럽</span>
+            </Link>
             <nav className="flex gap-4 items-center">
               {user ? (
                 <>

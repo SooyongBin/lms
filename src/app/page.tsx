@@ -109,7 +109,7 @@ export default function LeaguePage() {
     <div className="max-w-xl mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">
-          리그전 현황
+          제1회 리그전 현황
         </h1>
         <div className="flex gap-2">
           <Button onClick={() => router.push('/player/new')}>선수핸디등록</Button>
