@@ -58,17 +58,27 @@ async function fetchLeague(): Promise<{ players: Player[]; summary: LeagueSummar
     bonuses[g.winner_name] = (bonuses[g.winner_name] || 0) + (g.bonus || 0);
   });
 
-  const players: Player[] = playerHandicaps.map((p: { player_name: string; handicap: number }) => ({
-    name: p.player_name,
-    handicap: p.handicap,
-    point: points[p.player_name] || 0,
-    rank: 0,
-    gameCount: gameCounts[p.player_name] || 0,
-    progress: 0,
-    winCount: winCounts[p.player_name] || 0,
-    lossCount: lossCounts[p.player_name] || 0,
-    bonus: bonuses[p.player_name] || 0,
-  }));
+  const players: Player[] = playerHandicaps.map((p: { player_name: string; handicap: number }) => {
+    // Calculate individual player's progress
+    const playerGameCount = gameCounts[p.player_name] || 0;
+    const otherPlayersCount = playerHandicaps.length - 1; // Total games possible with other players
+    const playerTotalPossibleGames = otherPlayersCount; // Each player should play once with every other player
+    const playerProgress = playerTotalPossibleGames > 0 
+      ? Math.min(100, Math.round((playerGameCount / playerTotalPossibleGames) * 100))
+      : 0;
+
+    return {
+      name: p.player_name,
+      handicap: p.handicap,
+      point: points[p.player_name] || 0,
+      rank: 0,
+      gameCount: playerGameCount,
+      progress: playerProgress,
+      winCount: winCounts[p.player_name] || 0,
+      lossCount: lossCounts[p.player_name] || 0,
+      bonus: bonuses[p.player_name] || 0,
+    };
+  });
 
   const playerCount = players.length;
   const totalPossibleGames = playerCount > 1 ? (playerCount * (playerCount - 1)) / 2 : 0;
