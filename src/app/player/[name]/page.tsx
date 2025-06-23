@@ -15,6 +15,9 @@ interface Game {
 }
 
 async function fetchPlayerGames(name: string) {
+
+  
+  console.log("[PlayerDetailPage] 1. Fetch all games for the player...");
   // 1. Fetch all games for the player
   const { data: games, error: gameError } = await supabase
     .from('game')
@@ -25,6 +28,8 @@ async function fetchPlayerGames(name: string) {
     return [];
   }
 
+  console.log("[PlayerDetailPage] 2. Get unique opponents...");
+  
   // 2. Get unique opponents
   const opponentNames = [
     ...new Set(
@@ -32,11 +37,15 @@ async function fetchPlayerGames(name: string) {
     ),
   ];
 
+  console.log("[PlayerDetailPage] games.sort...");
+  
   if (opponentNames.length === 0) {
     games.sort((a, b) => new Date(b.played_at).getTime() - new Date(a.played_at).getTime());
     return games.map(g => ({ ...g, opponent_handicap: 0 }));
   }
 
+  console.log("[PlayerDetailPage] Fetch handicaps for all opponents...");
+  
   // 3. Fetch handicaps for all opponents
   const { data: handicaps, error: handicapError } = await supabase
     .from('player_handicap')
@@ -46,8 +55,10 @@ async function fetchPlayerGames(name: string) {
   if (handicapError) {
   }
 
+  console.log("[PlayerDetailPage] map start ...");
   const handicapMap = new Map(handicaps?.map(h => [h.player_name, h.handicap]) || []);
 
+  console.log("[PlayerDetailPage] Augment game data...");
   // 4. Augment game data
   const augmentedGames = games.map(g => {
     const opponentName = g.winner_name === name ? g.loser_name : g.winner_name;
