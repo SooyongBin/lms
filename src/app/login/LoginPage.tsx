@@ -26,6 +26,17 @@ export default function LoginPage() {
     };
   }, []);
 
+  const signInWithKakao = async () => {
+    setMsg('');
+    if (isRegisterMode) {
+      localStorage.setItem('isRegisteringAdmin', 'true');
+    }
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'kakao' });
+    if (error) {
+      setMsg('카카오 로그인 실패: ' + error.message);
+    }
+  };
+
   const handleLogin = async () => {
     setMsg('');
     if (isRegisterMode) {
@@ -66,9 +77,14 @@ export default function LoginPage() {
           <Button onClick={handleLogout}>로그아웃</Button>
         </div>
       ) : (
-        <Button onClick={handleLogin} className="w-full flex items-center justify-center gap-2">
-          구글
-        </Button>
+        <div className="space-y-2">
+          <Button onClick={signInWithKakao} className="w-full flex items-center justify-center gap-2 bg-yellow-400 text-black hover:bg-yellow-500">
+            카카오
+          </Button>
+          <Button onClick={handleLogin} className="w-full flex items-center justify-center gap-2">
+            구글
+          </Button>
+        </div>
       )}
       {msg && <div className="text-sm mt-2">{msg}</div>}
     </div>

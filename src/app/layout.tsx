@@ -25,6 +25,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     supabase.auth.getSession();
     const listener = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
+      // console.log('소셜 로그인 후 session.user:', session?.user);
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.hash = '';
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         window.history.replaceState({}, document.title, url.pathname);
       }
       const isRegistering = localStorage.getItem('isRegisteringAdmin');
+      console.log('isRegistering:', isRegistering);
       if (session?.user && isRegistering === 'true') {
         try {
           const { error } = await supabase.from('admin').upsert({
@@ -39,12 +41,32 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }).select();
           if (error) {
             alert('관리자 등록에 실패했습니다: ' + error.message);
+            console.error('관리자 등록 에러:', error);
           } else {
             alert('관리자로 정상 등록되었습니다.');
             localStorage.removeItem('isRegisteringAdmin');
           }
-        } catch {
+        } catch (e) {
           alert('예상치 못한 오류가 발생하여 관리자 등록에 실패했습니다.');
+          console.error('관리자 등록 예외:', e);
+        }
+      } else if (session?.user && isRegistering !== 'true') {
+        // 일반 로그인: 관리자가 맞는지 확인
+        try {
+          const { data, error } = await supabase.from('admin').select('id').eq('id', session.user.id).single();
+          if (error || !data) {
+            alert('등록된 관리자가 아닙니다.');
+            await supabase.auth.signOut();
+            setUser(null);
+            window.location.href = '/login';
+            return;
+          }
+        } catch (e) {
+          alert('관리자 인증 중 오류가 발생했습니다.');
+          await supabase.auth.signOut();
+          setUser(null);
+          window.location.href = '/login';
+          return;
         }
       }
       if (!session) {
@@ -66,9 +88,32 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    window.location.href = '/';
+    try {
+      console.log('로그아웃 버튼 클릭됨');
+      console.log('signOut 함수 호출 시작...');
+      
+      const { error } = await Promise.race([
+        supabase.auth.signOut(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('로그아웃 시간 초과')), 5000)
+        )
+      ]);
+
+      if (error) {
+        console.error('signOut 에러:', error);
+        alert('로그아웃 중 오류가 발생했습니다: ' + error.message);
+        return;
+      }
+
+      console.log('supabase.auth.signOut() 완료');
+      setUser(null);
+      console.log('setUser(null) 호출');
+      window.location.href = '/';
+      console.log('메인 페이지로 이동');
+    } catch (e) {
+      console.error('로그아웃 중 예외 발생:', e);
+      alert('로그아웃 중 예외가 발생했습니다: ' + (e instanceof Error ? e.message : '알 수 없는 오류'));
+    }
   };
 
   const handleReset = async () => {

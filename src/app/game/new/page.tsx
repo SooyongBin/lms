@@ -159,7 +159,7 @@ export default function GameNewPage() {
             type="text"
             value={score}
             onChange={(e) => setScore(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
             placeholder="예: 10:8"
           />
         </div>
