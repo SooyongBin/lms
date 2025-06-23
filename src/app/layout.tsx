@@ -23,15 +23,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     supabase.auth.getSession();
-    const listener = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
-      // console.log('소셜 로그인 후 session.user:', session?.user);
-      if (typeof window !== 'undefined') {
-        const url = new URL(window.location.href);
-        url.hash = '';
-        url.search = '';
-        window.history.replaceState({}, document.title, url.pathname);
-      }
       const isRegistering = localStorage.getItem('isRegisteringAdmin');
       console.log('isRegistering:', isRegistering);
       if (session?.user && isRegistering === 'true') {
@@ -46,9 +39,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             alert('관리자로 정상 등록되었습니다.');
             localStorage.removeItem('isRegisteringAdmin');
           }
-        } catch (e) {
+        } catch (error) {
           alert('예상치 못한 오류가 발생하여 관리자 등록에 실패했습니다.');
-          console.error('관리자 등록 예외:', e);
+          console.error('관리자 등록 예외:', error);
         }
       } else if (session?.user && isRegistering !== 'true') {
         // 일반 로그인: 관리자가 맞는지 확인
@@ -61,7 +54,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             window.location.href = '/login';
             return;
           }
-        } catch (e) {
+        } catch {
           alert('관리자 인증 중 오류가 발생했습니다.');
           await supabase.auth.signOut();
           setUser(null);
@@ -76,16 +69,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         });
       }
     });
-    if (!user) {
-      checkAdminExists().then(exists => {
-        setAdminLinkText(exists ? '관리자' : '관리자 등록');
-        setLoginHref(exists ? '/login' : '/login?mode=register');
-      });
-    }
+
     return () => {
-      listener.data?.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
-  }, []);
+  }, []); // 컴포넌트 마운트 시 한 번만 실행
 
   const handleLogout = async () => {
     try {
@@ -97,7 +85,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         new Promise((_, reject) => 
           setTimeout(() => reject(new Error('로그아웃 시간 초과')), 5000)
         )
-      ]);
+      ]) as { error: Error | null };
 
       if (error) {
         console.error('signOut 에러:', error);
