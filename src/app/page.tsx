@@ -107,11 +107,11 @@ export default function LeaguePage() {
 
   return (
     <div className="max-w-xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">
+      <div className="mb-4">
+        <h1 className="text-2xl font-bold text-center mb-4">
           제1회 리그전 현황
         </h1>
-        <div className="flex gap-2">
+        <div className="flex justify-center gap-2">
           <Button onClick={() => router.push('/player/new')}>선수핸디등록</Button>
           <Button onClick={() => router.push('/game/new')}>게임결과등록</Button>
         </div>
@@ -126,11 +126,11 @@ export default function LeaguePage() {
             </div>
             <div>
               <div className="text-sm text-gray-500">경기수</div>
-              <div className="text-lg font-bold" style={{ color: '#1f2937' }}>{summary.gameCount} 게임</div>
+              <div className="text-lg font-bold" style={{ color: '#1f2937' }}>{summary.gameCount}</div>
             </div>
             <div>
               <div className="text-sm text-gray-500">총경기수</div>
-              <div className="text-lg font-bold" style={{ color: '#1f2937' }}>{summary.totalPossibleGames} 게임</div>
+              <div className="text-lg font-bold" style={{ color: '#1f2937' }}>{summary.totalPossibleGames}</div>
             </div>
             <div>
               <div className="text-sm text-gray-500">진행율</div>
@@ -143,7 +143,6 @@ export default function LeaguePage() {
         <span className="w-1/12">순위</span>
         <span className="w-3/12 text-left pl-2">이름</span>
         <span className="w-1/12">핸디</span>
-        <span className="w-1/12">게임수</span>
         <span className="w-1/12">진행율</span>
         <span className="w-1/12">승</span>
         <span className="w-1/12">패</span>
@@ -160,7 +159,6 @@ export default function LeaguePage() {
                 <span className="w-1/12">{p.rank}위</span>
                 <a href={`/player/${encodeURIComponent(p.name)}`} className="text-blue-600 underline w-3/12 text-left pl-2">{p.name}</a>
                 <span className="w-1/12">{p.handicap}</span>
-                <span className="w-1/12">{p.gameCount}</span>
                 <span className={`w-1/12 ${p.progress <= 70 ? 'text-red-500' : ''}`}>{p.progress}%</span>
                 <span className="w-1/12">{p.winCount}</span>
                 <span className="w-1/12">{p.lossCount}</span>
