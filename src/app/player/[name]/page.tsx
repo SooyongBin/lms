@@ -87,7 +87,7 @@ export default function PlayerDetailPage() {
       setLoading(false);
     });
 
-    console.log("1.세션 정보 콘솔 출력...");
+    
     // 세션 정보 콘솔 출력
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAdmin(!!session);
@@ -96,6 +96,7 @@ export default function PlayerDetailPage() {
     supabase.auth.onAuthStateChange((_event, session) => {
       setIsAdmin(!!session);
     });
+    console.log("3.세션 정보 콘솔 출력...");
   }, [name]);
 
   const handleDelete = async (gameId: number, playedAt: string, opponentName: string) => {
