@@ -12,24 +12,39 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
+        get: (name: string) => cookieStore.get(name)?.value,
       },
     }
   );
-  const { data: { session } } = await supabase.auth.getSession();
+  let { data: { session } } = await supabase.auth.getSession();
   let adminLinkText = '관리자';
   let loginHref = '/login';
 
-  if (session?.user) {
-    // Check if user is admin (no longer used, just check session)
-    await supabase.from('admin').select('id').eq('id', session.user.id).single();
+  // 1. admin 테이블 row가 없다면, 세션 무조건 삭제, '관리자 등록'
+  const { data: adminRows, count: adminCount } = await supabase.from('admin').select('id', { count: 'exact' });
+  const admin = adminRows && adminRows.length > 0 ? adminRows[0] : null;
+
+  if (!admin || (adminCount ?? 0) === 0) {
+    // 세션이 있으면 로그아웃 처리
+    if (session) {
+      await supabase.auth.signOut();
+      session = null;
+    }
+    adminLinkText = '관리자 등록';
+    loginHref = '/login?mode=register';
+  } else if (!session) {
+    // 2. admin row 있고, 세션 없으면 '관리자'
+    adminLinkText = '관리자';
+    loginHref = '/login';
+  } else if (session.user.id !== admin.id) {
+    // 3. admin row 있고, 세션 있고, uuid 다르면 세션 삭제 후 '관리자'
+    await supabase.auth.signOut();
+    session = null;
+    adminLinkText = '관리자';
+    loginHref = '/login';
   } else {
-    // Check if any admin exists
-    const { count } = await supabase.from('admin').select('id', { count: 'exact', head: true });
-    adminLinkText = count && count > 0 ? '관리자' : '관리자 등록';
-    loginHref = count && count > 0 ? '/login' : '/login?mode=register';
+    // 4. admin row 있고, 세션 있고, uuid 같으면 '로그아웃'과 '관리자삭제'
+    // (HeaderClient가 user 있으면 자동으로 '로그아웃'/'관리자삭제' 보여줌)
   }
 
   return (
