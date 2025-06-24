@@ -81,7 +81,7 @@ export default function HeaderClient({ session, adminLinkText, loginHref }: Head
         <nav className="flex gap-4 items-center">
           {user ? (
             <>
-              <button onClick={handleLogout} className="text-sm text-gray-600 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-300">로그아웃</button>
+              <button onClick={handleLogout} className="text-sm text-gray-600 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-300">로그아웃1</button>
               <button onClick={handleReset} className="text-sm text-red-500 border border-red-200 rounded px-2 py-1 hover:bg-red-50 dark:border-red-400 dark:hover:bg-red-900">관리자삭제</button>
             </>
           ) : (

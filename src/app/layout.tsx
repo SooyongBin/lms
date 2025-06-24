@@ -30,7 +30,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       await supabase.auth.signOut();
       session = null;
     }
-    adminLinkText = '관리자 등록';
+    adminLinkText = '관리자 등록1';
     loginHref = '/login?mode=register';
   } else if (!session) {
     // 2. admin row 있고, 세션 없으면 '관리자'
