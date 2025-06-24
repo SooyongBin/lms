@@ -34,14 +34,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     loginHref = '/login?mode=register';
   } else if (!session) {
     // 2. admin row 있고, 세션 없으면 '관리자'
-    adminLinkText = '관리자';
-    loginHref = '/login';
+    // adminLinkText = '관리자';
+    // loginHref = '/login';
   } else if (session.user.id !== admin.id) {
     // 3. admin row 있고, 세션 있고, uuid 다르면 세션 삭제 후 '관리자'
     await supabase.auth.signOut();
     session = null;
-    adminLinkText = '관리자';
-    loginHref = '/login';
+    // adminLinkText = '관리자';
+    // loginHref = '/login';
   } else {
     // 4. admin row 있고, 세션 있고, uuid 같으면 '로그아웃'과 '관리자삭제'
     // (HeaderClient가 user 있으면 자동으로 '로그아웃'/'관리자삭제' 보여줌)
