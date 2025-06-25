@@ -31,10 +31,11 @@ export default function HeaderClient({ session, adminLinkText, loginHref, adminC
     });
 
         // If adminCount is 0 and user exists, sign out client session
-        if (adminCount === 0 && user) {
+        if (adminCount === 0) {
+          console.log('[HeaderClient] 3. Client session signed out because adminCount is 0');
           supabase.auth.signOut().then(() => {
             setUser(null);
-            console.log('[HeaderClient] 3. Client session signed out because adminCount is 0');
+            console.log('[HeaderClient] 4 Client session signed out because adminCount is 0');
           });
         }
 
