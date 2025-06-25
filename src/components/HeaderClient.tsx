@@ -14,35 +14,27 @@ interface Session {
 
 interface HeaderClientProps {
   session: Session | null;
-  adminLinkText: string;
-  loginHref: string;
   adminCount: number;
 }
 
-export default function HeaderClient({ session, adminLinkText, loginHref, adminCount }: HeaderClientProps) {
+export default function HeaderClient({ session, adminCount }: HeaderClientProps) {
   const [user, setUser] = React.useState<SessionUser | null>(session?.user ? { id: session.user.id, email: session.user.email } : null);
 
   React.useEffect(() => {
-    console.log('[HeaderClient] 1. adminCount prop:', adminCount);
+    // console.log('[HeaderClient] 1. adminCount prop:', adminCount);
     setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('[HeaderClient] 2. auth state changed:', session);
-      setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
-    });
 
         // If adminCount is 0 and user exists, sign out client session
         if (adminCount === 0) {
-          console.log('[HeaderClient] 3. Client session signed out because adminCount is 0');
+          // console.log('[HeaderClient] 3. Client session signed out because adminCount is 0');
           supabase.auth.signOut().then(() => {
             setUser(null);
-            console.log('[HeaderClient] 4 Client session signed out because adminCount is 0');
+            // console.log('[HeaderClient] 4 Client session signed out because adminCount is 0');
           });
         }
 
-        
-
     return () => {
-      subscription.unsubscribe();
+      // No need to unsubscribe from auth state changes
     };
   }, [session, adminCount]);
 
@@ -94,13 +86,11 @@ export default function HeaderClient({ session, adminLinkText, loginHref, adminC
           <span className="text-xl font-bold text-gray-800 dark:text-white">세븐당구클럽v0.2</span>
         </Link>
         <nav className="flex gap-4 items-center">
-          {user ? (
+          {user && (
             <>
               <button onClick={handleLogout} className="text-sm text-gray-600 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-300">로그아웃</button>
               <button onClick={handleReset} className="text-sm text-red-500 border border-red-200 rounded px-2 py-1 hover:bg-red-50 dark:border-red-400 dark:hover:bg-red-900">관리자삭제</button>
             </>
-          ) : (
-            <Link href={loginHref} className="text-sm text-gray-600 hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-300">{adminLinkText}</Link>
           )}
         </nav>
       </div>

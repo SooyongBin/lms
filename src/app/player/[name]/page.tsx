@@ -17,7 +17,7 @@ interface Game {
 async function fetchPlayerGames(name: string) {
 
   
-  console.log("[PlayerDetailPage] 1. Fetch all games for the player...");
+  // console.log("[PlayerDetailPage] 1. Fetch all games for the player...");
   // 1. Fetch all games for the player
   const { data: games, error: gameError } = await supabase
     .from('game')
@@ -28,7 +28,7 @@ async function fetchPlayerGames(name: string) {
     return [];
   }
 
-  console.log("[PlayerDetailPage] 2. Get unique opponents...");
+  // console.log("[PlayerDetailPage] 2. Get unique opponents...");
   
   // 2. Get unique opponents
   const opponentNames = [
@@ -37,14 +37,14 @@ async function fetchPlayerGames(name: string) {
     ),
   ];
 
-  console.log("[PlayerDetailPage] games.sort...");
+  // console.log("[PlayerDetailPage] games.sort...");
   
   if (opponentNames.length === 0) {
     games.sort((a, b) => new Date(b.played_at).getTime() - new Date(a.played_at).getTime());
     return games.map(g => ({ ...g, opponent_handicap: 0 }));
   }
 
-  console.log("[PlayerDetailPage] Fetch handicaps for all opponents...");
+  // console.log("[PlayerDetailPage] Fetch handicaps for all opponents...");
   
   // 3. Fetch handicaps for all opponents
   const { data: handicaps, error: handicapError } = await supabase
@@ -55,10 +55,10 @@ async function fetchPlayerGames(name: string) {
   if (handicapError) {
   }
 
-  console.log("[PlayerDetailPage] map start ...");
+  // console.log("[PlayerDetailPage] map start ...");
   const handicapMap = new Map(handicaps?.map(h => [h.player_name, h.handicap]) || []);
 
-  console.log("[PlayerDetailPage] Augment game data...");
+  // console.log("[PlayerDetailPage] Augment game data...");
   // 4. Augment game data
   const augmentedGames = games.map(g => {
     const opponentName = g.winner_name === name ? g.loser_name : g.winner_name;
@@ -78,7 +78,6 @@ export default function PlayerDetailPage() {
   const name = decodeURIComponent(params.name as string);
   const [games, setGames] = React.useState<Game[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [isAdmin, setIsAdmin] = React.useState(false);
 
   React.useEffect(() => {
     setLoading(true);
@@ -86,17 +85,6 @@ export default function PlayerDetailPage() {
       setGames(data);
       setLoading(false);
     });
-
-    
-    // 세션 정보 콘솔 출력
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAdmin(!!session);
-    });
-    console.log("2.세션 정보 콘솔 출력...");
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAdmin(!!session);
-    });
-    console.log("3.세션 정보 콘솔 출력...");
   }, [name]);
 
   const handleDelete = async (gameId: number, playedAt: string, opponentName: string) => {
@@ -115,47 +103,39 @@ export default function PlayerDetailPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-4">
-      <h1 className="text-xl font-bold mb-4">{name}의 경기 이력 ({games.length}경기)</h1>
-      <div className="flex justify-between items-center font-bold border-b pb-2 mb-2 text-center">
-        <span className="w-3/12">날짜시간</span>
-        <span className="w-1/12">승/패</span>
-        <span className="w-2/12">상대</span>
-        <span className="w-1/12">핸디</span>
-        <span className="w-2/12">점수</span>
-        <span className="w-1/12">승점</span>
-        <span className="w-2/12">보너스</span>
-        {isAdmin && <span className="w-1/12">삭제</span>}
-      </div>
-      <List>
-        {games.length > 0 ? (
-          games.map((g, i) => (
-            <div key={g.id || i} className="flex justify-between items-center text-center">
-              <span className="w-3/12">{g.played_at?.slice(0, 16).replace('T', ' ')}</span>
-              <span className="w-1/12">{g.winner_name === name ? '승' : '패'}</span>
-              <span className="w-2/12">{g.winner_name === name ? g.loser_name : g.winner_name}</span>
-              <span className="w-1/12">{g.opponent_handicap}</span>
-              <span className="w-2/12">{g.score}</span>
-              <span className="w-1/12">{g.winner_name === name ? 3 : 1}</span>
-              <span className="w-2/12">+{g.bonus || 0}</span>
-              {isAdmin && (
-                <span className="w-1/12">
+    <div className="max-w-2xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">{name}의 경기 이력</h1>
+      {loading ? (
+        <div className="p-4">경기 이력을 불러오는 중...</div>
+      ) : (
+        <>
+          <div className="flex font-bold border-b pb-2 mb-2 text-sm text-gray-700 dark:text-gray-200">
+            <div className="w-2/12">날짜시간</div>
+            <div className="w-3/12">상대선수</div>
+            <div className="w-1/12">승패</div>
+            <div className="w-2/12">점수</div>
+            <div className="w-1/12">삭제</div>
+          </div>
+          <List>
+            {games.map((g) => (
+              <div key={g.id} className="flex items-center py-2 text-sm">
+                <div className="w-2/12">{g.played_at.slice(0, 10)} {g.played_at.slice(11, 16)}</div>
+                <div className="w-3/12">{g.winner_name === name ? g.loser_name : g.winner_name}</div>
+                <div className="w-1/12 font-semibold">{g.winner_name === name ? '승' : '패'}</div>
+                <div className="w-2/12">{g.score} {g.bonus ? `(+${g.bonus})` : ''}</div>
+                <div className="w-1/12">
                   <button
                     className="text-xs text-red-500 border border-red-200 rounded px-2 py-1 hover:bg-red-50 dark:border-red-400 dark:hover:bg-red-900"
                     onClick={() => handleDelete(g.id, g.played_at, g.winner_name === name ? g.loser_name : g.winner_name)}
                   >
                     삭제
                   </button>
-                </span>
-              )}
-            </div>
-          ))
-        ) : (
-          <div className="text-center py-4">게임 이력이 없습니다.</div>
-        )}
-      </List>
-      <div className="mt-4 flex gap-2">
-      </div>
+                </div>
+              </div>
+            ))}
+          </List>
+        </>
+      )}
     </div>
   );
 } 

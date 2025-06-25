@@ -47,33 +47,9 @@ export default function GameDetailPage() {
   const router = useRouter();
   const id = params.id as string;
   const [game, setGame] = React.useState<Game | null>(null);
-  const [isAdmin, setIsAdmin] = React.useState(false);
 
   React.useEffect(() => {
-    const checkAdminStatus = async (userId: string | undefined) => {
-      if (!userId) {
-        setIsAdmin(false);
-        return;
-      }
-      const { data, error } = await supabase
-        .from('admin')
-        .select('id')
-        .eq('id', userId)
-        .single();
-      
-      setIsAdmin(!!data && !error);
-    };
-
     fetchGame(id).then(setGame);
-    
-    supabase.auth.onAuthStateChange((_event, session) => {
-      checkAdminStatus(session?.user?.id);
-    });
-
-    // Check on initial load
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      checkAdminStatus(session?.user?.id);
-    });
   }, [id]);
 
   if (!game) return <div className="p-4">경기 정보를 불러오는 중...</div>;
@@ -99,9 +75,8 @@ export default function GameDetailPage() {
         <div>보너스: {game.bonus}</div>
       </div>
       <div className="flex gap-2">
-        
-        {isAdmin && <Button variant="secondary" onClick={handleEdit}>수정</Button>}
-        {isAdmin && <Button variant="danger" onClick={handleDelete}>삭제</Button>}
+        <Button variant="secondary" onClick={handleEdit}>수정</Button>
+        <Button variant="danger" onClick={handleDelete}>삭제</Button>
       </div>
     </div>
   );

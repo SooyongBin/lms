@@ -67,16 +67,18 @@ async function fetchLeague(): Promise<{ players: Player[]; summary: LeagueSummar
       ? Math.min(100, Math.round((playerGameCount / playerTotalPossibleGames) * 100))
       : 0;
 
+    const basePoint = points[p.player_name] || 0;
+    const bonusPoint = bonuses[p.player_name] || 0;
     return {
       name: p.player_name,
       handicap: p.handicap,
-      point: points[p.player_name] || 0,
+      point: basePoint + bonusPoint,
       rank: 0,
       gameCount: playerGameCount,
       progress: playerProgress,
       winCount: winCounts[p.player_name] || 0,
       lossCount: lossCounts[p.player_name] || 0,
-      bonus: bonuses[p.player_name] || 0,
+      bonus: bonusPoint,
     };
   });
 
@@ -106,6 +108,10 @@ export default function LeaguePage() {
   const [summary, setSummary] = React.useState<LeagueSummary>({ playerCount: 0, gameCount: 0, totalPossibleGames: 0, progress: 0 });
   const [loading, setLoading] = React.useState(true);
   const router = useRouter();
+
+  React.useEffect(() => {
+    // console.log('[초기화면] localStorage.isRegisteringAdmin:', localStorage.getItem('isRegisteringAdmin'));
+  }, []);
 
   React.useEffect(() => {
     fetchLeague().then((result: { players: Player[]; summary: LeagueSummary }) => {

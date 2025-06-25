@@ -7,18 +7,28 @@ import HeaderClient from '@/components/HeaderClient';
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const cookieStore = await cookies();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (name: string) => cookieStore.get(name)?.value,
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Server Component에서 호출 시 무시
+          }
+        },
       },
     }
   );
   let { data: { session } } = await supabase.auth.getSession();
-  let adminLinkText = '관리자';
-  let loginHref = '/login';
 
   // 1. admin 테이블 row가 없다면, 세션 무조건 삭제, '관리자 등록'
   const { data: adminRows, count: adminCount } = await supabase.from('admin').select('id', { count: 'exact' });
@@ -31,20 +41,13 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       session = null;
       // console.error('[01] 1. no admin data, session reset');
     // }
-    adminLinkText = '관리자 등록9';
-    loginHref = '/login?mode=register';
   } else if (!session) {
     // console.error('[01] 2. admin data, no session');
-    // 2. admin row 있고, 세션 없으면 '관리자'
-    // adminLinkText = '관리자';
-    // loginHref = '/login';
   } else if (session.user.id !== admin.id) {
     // 3. admin row 있고, 세션 있고, uuid 다르면 세션 삭제 후 '관리자'
     await supabase.auth.signOut();
     session = null;
     // console.error('[01] 3. admin data, uuid mismatch, session reset');
-    // adminLinkText = '관리자';
-    // loginHref = '/login';
   } else {
     // console.error('[01] 4. admin data, uuid match');
     // 4. admin row 있고, 세션 있고, uuid 같으면 '로그아웃'과 '관리자삭제'
@@ -57,7 +60,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body className="min-h-screen flex flex-col bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
         <ThemeManager />
         {/* Header */}
-        <HeaderClient session={session} adminLinkText={adminLinkText} loginHref={loginHref} adminCount={adminCount ?? 0} />
+        <HeaderClient session={session} adminCount={adminCount ?? 0} />
         {/* Main */}
         <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-6">
           {children}
