@@ -29,12 +29,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     if (session) {
       await supabase.auth.signOut();
       session = null;
-      console.error('[01] 1. no admin data, session reset');
+      // console.error('[01] 1. no admin data, session reset');
     }
     adminLinkText = '관리자 등록1';
     loginHref = '/login?mode=register';
   } else if (!session) {
-    console.error('[01] 2. admin data, no session');
+    // console.error('[01] 2. admin data, no session');
     // 2. admin row 있고, 세션 없으면 '관리자'
     // adminLinkText = '관리자';
     // loginHref = '/login';
@@ -42,11 +42,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     // 3. admin row 있고, 세션 있고, uuid 다르면 세션 삭제 후 '관리자'
     await supabase.auth.signOut();
     session = null;
-    console.error('[01] 3. admin data, uuid mismatch, session reset');
+    // console.error('[01] 3. admin data, uuid mismatch, session reset');
     // adminLinkText = '관리자';
     // loginHref = '/login';
   } else {
-    console.error('[01] 4. admin data, uuid match');
+    // console.error('[01] 4. admin data, uuid match');
     // 4. admin row 있고, 세션 있고, uuid 같으면 '로그아웃'과 '관리자삭제'
     // (HeaderClient가 user 있으면 자동으로 '로그아웃'/'관리자삭제' 보여줌)
   }

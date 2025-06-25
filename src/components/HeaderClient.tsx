@@ -24,6 +24,8 @@ export default function HeaderClient({ session, adminLinkText, loginHref }: Head
   React.useEffect(() => {
     setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('[HeaderClient] auth state changed:', session);
+      
       setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
     });
     return () => {
