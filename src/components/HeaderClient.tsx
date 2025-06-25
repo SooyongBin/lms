@@ -23,19 +23,16 @@ export default function HeaderClient({ session, adminLinkText, loginHref, adminC
   const [user, setUser] = React.useState<SessionUser | null>(session?.user ? { id: session.user.id, email: session.user.email } : null);
 
   React.useEffect(() => {
-    console.log('[HeaderClient] adminCount prop:', adminCount);
-  }, [adminCount]);
-
-  React.useEffect(() => {
+    console.log('[HeaderClient] 1. adminCount prop:', adminCount);
     setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('[HeaderClient] auth state changed:', session);
+      console.log('[HeaderClient] 2. auth state changed:', session);
       setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
     });
     return () => {
       subscription.unsubscribe();
     };
-  }, [session]);
+  }, [session, adminCount]);
 
   const handleLogout = async () => {
     try {
