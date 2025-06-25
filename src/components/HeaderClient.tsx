@@ -39,7 +39,7 @@ export default function HeaderClient({ session, adminLinkText, loginHref, adminC
         }
 
         
-        
+
     return () => {
       subscription.unsubscribe();
     };
@@ -90,7 +90,7 @@ export default function HeaderClient({ session, adminLinkText, loginHref, adminC
       <div className="max-w-3xl mx-auto flex items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/sevenball.jpeg" alt="세븐볼" width={40} height={40} className="object-contain" />
-          <span className="text-xl font-bold text-gray-800 dark:text-white">세븐당구클럽</span>
+          <span className="text-xl font-bold text-gray-800 dark:text-white">세븐당구클럽1</span>
         </Link>
         <nav className="flex gap-4 items-center">
           {user ? (
