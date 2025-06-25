@@ -56,7 +56,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body className="min-h-screen flex flex-col bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
         <ThemeManager />
         {/* Header */}
-        <HeaderClient session={session} adminLinkText={adminLinkText} loginHref={loginHref} />
+        <HeaderClient session={session} adminLinkText={adminLinkText} loginHref={loginHref} adminCount={adminCount ?? 0} />
         {/* Main */}
         <main className="flex-1 max-w-3xl mx-auto w-full px-4 py-6">
           {children}

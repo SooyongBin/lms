@@ -16,16 +16,20 @@ interface HeaderClientProps {
   session: Session | null;
   adminLinkText: string;
   loginHref: string;
+  adminCount: number;
 }
 
-export default function HeaderClient({ session, adminLinkText, loginHref }: HeaderClientProps) {
+export default function HeaderClient({ session, adminLinkText, loginHref, adminCount }: HeaderClientProps) {
   const [user, setUser] = React.useState<SessionUser | null>(session?.user ? { id: session.user.id, email: session.user.email } : null);
+
+  React.useEffect(() => {
+    console.log('[HeaderClient] adminCount prop:', adminCount);
+  }, [adminCount]);
 
   React.useEffect(() => {
     setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('[HeaderClient] auth state changed:', session);
-      
       setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
     });
     return () => {
