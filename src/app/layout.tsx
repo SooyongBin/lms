@@ -52,14 +52,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   }
 
 
-// for test
-await supabase.auth.signOut();
-session = null;
-adminLinkText = '관리자 등록10';
-loginHref = '/login?mode=register';
-
-
-
   return (
     <html lang="ko">
       <body className="min-h-screen flex flex-col bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
