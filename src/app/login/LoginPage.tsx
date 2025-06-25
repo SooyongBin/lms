@@ -26,6 +26,50 @@ export default function LoginPage() {
     };
   }, []);
 
+  // 관리자 등록/로그인 후 추가 처리
+  React.useEffect(() => {
+    async function handleAdminLogic() {
+      if (!user) return;
+      // admin row 조회
+      const { data: admins, error } = await supabase
+        .from('admin')
+        .select('id', { count: 'exact' });
+      if (error) {
+        setMsg('관리자 정보 조회 실패: ' + error.message);
+        return;
+      }
+      if (!admins || admins.length === 0) {
+        // 관리자 등록 모드: 현재 user의 uuid를 admin 테이블에 insert
+        const { error: insertError } = await supabase
+          .from('admin')
+          .insert([{ id: user.id, email: user.email }]);
+        if (insertError) {
+          setMsg('관리자 등록 실패: ' + insertError.message);
+          await supabase.auth.signOut();
+          setUser(null);
+          return;
+        }
+        setMsg('관리자 등록 완료!');
+        // 등록 후 홈으로 이동
+        router.push('/');
+      } else {
+        // 관리자 로그인 모드: uuid 비교
+        const admin = admins[0];
+        if (user.id !== admin.id) {
+          setMsg('이 계정은 관리자가 아닙니다.');
+          await supabase.auth.signOut();
+          setUser(null);
+        } else {
+          // 정상 관리자 로그인
+          router.push('/');
+        }
+      }
+    }
+    if (user) {
+      handleAdminLogic();
+    }
+  }, [user, router]);
+
   const signInWithKakao = async () => {
     setMsg('');
     if (isRegisterMode) {
