@@ -25,17 +25,21 @@ export default function HeaderClient({ session, adminLinkText, loginHref, adminC
   React.useEffect(() => {
     console.log('[HeaderClient] 1. adminCount prop:', adminCount);
     setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
-    // If adminCount is 0 and user exists, sign out client session
-    if (adminCount === 0 && user) {
-      supabase.auth.signOut().then(() => {
-        setUser(null);
-        console.log('[HeaderClient] Client session signed out because adminCount is 0');
-      });
-    }
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('[HeaderClient] 2. auth state changed:', session);
       setUser(session?.user ? { id: session.user.id, email: session.user.email } : null);
     });
+
+        // If adminCount is 0 and user exists, sign out client session
+        if (adminCount === 0 && user) {
+          supabase.auth.signOut().then(() => {
+            setUser(null);
+            console.log('[HeaderClient] 3. Client session signed out because adminCount is 0');
+          });
+        }
+
+        
+        
     return () => {
       subscription.unsubscribe();
     };
