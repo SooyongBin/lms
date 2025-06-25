@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       session = null;
       // console.error('[01] 1. no admin data, session reset');
     // }
-    adminLinkText = '관리자 등록1';
+    adminLinkText = '관리자 등록9';
     loginHref = '/login?mode=register';
   } else if (!session) {
     // console.error('[01] 2. admin data, no session');
