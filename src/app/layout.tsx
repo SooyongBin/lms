@@ -26,11 +26,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   if (!admin || (adminCount ?? 0) === 0) {
     // 세션이 있으면 로그아웃 처리
-    if (session) {
+    // if (session) {
       await supabase.auth.signOut();
       session = null;
       // console.error('[01] 1. no admin data, session reset');
-    }
+    // }
     adminLinkText = '관리자 등록1';
     loginHref = '/login?mode=register';
   } else if (!session) {
