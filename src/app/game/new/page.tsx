@@ -153,14 +153,14 @@ export default function GameNewPage() {
         </div>
         
         <div>
-          <label htmlFor="score" className="block text-sm font-medium text-gray-700">점수</label>
+          <label htmlFor="score" className="block text-sm font-medium text-gray-700">내역</label>
           <input
             id="score"
             type="text"
             value={score}
             onChange={(e) => setScore(e.target.value)}
             className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
-            placeholder="예: 10:8"
+            placeholder="내역을 입력하세요. 예: 10대8"
           />
         </div>
 

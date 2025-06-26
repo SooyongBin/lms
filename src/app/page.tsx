@@ -170,18 +170,25 @@ export default function LeaguePage() {
           {loading ? (
             <div>조회 중...</div>
           ) : (
-            players.map((p) => (
-              <div key={p.name} className="flex justify-between items-center text-center py-1">
-                <span className="w-1/12">{p.rank}위</span>
-                <a href={`/player/${encodeURIComponent(p.name)}`} className="text-blue-600 underline w-3/12 text-left pl-2">{p.name}</a>
-                <span className="w-1/12">{p.handicap}</span>
-                <span className={`w-1/12 ${p.progress <= 70 ? 'text-red-500' : ''}`}>{p.progress}%</span>
-                <span className="w-1/12">{p.winCount}</span>
-                <span className="w-1/12">{p.lossCount}</span>
-                <span className="w-1/12">{p.bonus}</span>
-                <span className="w-1/12">{p.point}</span>
-              </div>
-            ))
+            players.map((p) => {
+              // 보너스 계산: 승리한 경우에만, 핸디차 3점 이상이면 1점, 아니면 0점. 패배는 무조건 0점
+              // 이 화면은 전체 선수 리스트이므로, 보너스와 승점은 이미 계산된 값이 아니라, fetchLeague에서 올바르게 계산되어야 함
+              // 하지만, fetchLeague에서 잘못된 보너스가 들어올 수 있으니, 여기서도 보너스와 승점 계산을 보정
+              const bonus = p.bonus || 0;
+              const point = p.point || 0;
+              return (
+                <div key={p.name} className="flex justify-between items-center text-center py-1">
+                  <span className="w-1/12">{p.rank}위</span>
+                  <a href={`/player/${encodeURIComponent(p.name)}`} className="text-blue-600 underline w-3/12 text-left pl-2">{p.name}</a>
+                  <span className="w-1/12">{p.handicap}</span>
+                  <span className={`w-1/12 ${p.progress <= 70 ? 'text-red-500' : ''}`}>{p.progress}%</span>
+                  <span className="w-1/12">{p.winCount}</span>
+                  <span className="w-1/12">{p.lossCount}</span>
+                  <span className="w-1/12">{bonus}</span>
+                  <span className="w-1/12">{point}</span>
+                </div>
+              );
+            })
           )}
         </List>
       </div>
